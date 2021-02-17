@@ -1,0 +1,21 @@
+{
+  "name": "ASU Class Search Helper",
+  "version": "1.0",
+  "description": "Rate My Professors Plugin for ASU Class Search",
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.asu.edu/catalog*"],
+      "js": ["content/content.js", "content/jquery-3.5.1.min.js"]
+    }
+  ],
+  "permissions": [
+    "activeTab",
+    "https://www.ratemyprofessors.com/*",
+    "background"
+  ],
+  "manifest_version": 2
+}

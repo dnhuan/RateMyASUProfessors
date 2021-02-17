@@ -1,0 +1,496 @@
+type AuthenticationResponse {
+  token: String
+  user: User
+  validation: ValidationResult
+}
+
+type Course {
+  courseCount: Int
+  courseName: String
+  teacherId: Int
+}
+
+type Department {
+  id: ID
+  name: String
+}
+
+input DeptInputObject {
+  name: String
+  id: ID
+}
+
+type FieldErrorType {
+  field: String
+  messages: [String]
+}
+
+type Mutation {
+  confirmEmail(token: String!): UserMutationResponse
+  createThumb(tid: Int, rid: Int, thumbsUp: Int, thumbsDown: Int, userId: Int): Thumb
+  emailValidation(email: String!, recaptcha: String!): ValidationResponse
+
+  """Lock or soft-lock a list of teachers, requires an admin account"""
+  lockTeachers(
+    """An array of teacher IDs"""
+    teacherIDs: [ID]!
+
+    """Expiry of lock as unix timestamp incl. millis"""
+    expiry: String!
+
+    """Should the teachers be hard-locked"""
+    hard: Boolean = false
+  ): ValidationResponse
+  maskRatings(date: String): Rating
+  resendEmailConfirmation: ValidationResponse
+  resetPassword(token: String!, password: String!, confirmPassword: String!, recaptcha: String!): ValidationResponse
+  resetPasswordRequest(email: String!): ValidationResponse
+  tagCreate(tag: tagInput): TagCreateMutationResponse
+  teacherEmailAlert(enable: Boolean!): teacherMutationResponse
+  teacherNoteCreate(teacherNote: teacherNotesInput): TeacherNoteCreateResponse
+  userCreate(user: UserInputObject): UserMutationResponse
+  userDelete(password: String!): UserMutationResponse
+  userEmailFromResetToken(token: String!): ResetFindEmailResponse
+  userLogin(email: String!, password: String!): AuthenticationResponse
+  userToggleSavedProfessor(id: ID): UserToggleSavedProfessorMutationResponse
+  userUpdate(user: UserInputObject): UserMutationResponse
+  userUpdateEmail(email: String, password: String): UserMutationResponse
+  userUpdatePassword(oldPassword: String, password: String): UserMutationResponse
+}
+
+type newSearch {
+  """Get Filtered/Sorted School Search Results"""
+  schools(last: Int, before: String, after: String, first: Int, query: SchoolSearchQuery): SchoolSearchConnectionConnection
+
+  """Get Filtered/Sorted Teacher Search Results"""
+  teachers(last: Int, before: String, query: TeacherSearchQuery, after: String, first: Int): TeacherSearchConnectionConnection
+}
+
+interface Node {
+  id: ID
+}
+
+type notesConnectionTypeConnection {
+  edges: [notesConnectionTypeEdges]
+  pageInfo: notesConnectionTypePageInfo
+}
+
+type notesConnectionTypeEdges {
+  cursor: String
+  node: TeacherNotes
+}
+
+type notesConnectionTypePageInfo {
+  endCursor: String
+  hasNextPage: Boolean
+  hasPreviousPage: Boolean
+  startCursor: String
+}
+
+"""Information about pagination in a connection."""
+type PageInfo {
+  """When paginating forwards, the cursor to continue."""
+  endCursor: String
+
+  """When paginating forwards, are there more items?"""
+  hasNextPage: Boolean!
+
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+
+  """When paginating backwards, the cursor to continue."""
+  startCursor: String
+}
+
+input PaginateObject {
+  first: Int
+  before: String
+  after: String
+}
+
+type Query {
+  """Get Search Results"""
+  autocomplete(query: String): Search
+
+  """Get New Search Results"""
+  newSearch: newSearch
+
+  """Get Node by ID"""
+  node(id: ID): Node
+
+  """Get Search Results"""
+  search(query: String): Search
+
+  """
+  Get professors who are being spammed or harassed, this is determined by the number of removed ratings within a timeframe
+  """
+  spammedTeachers(
+    """The minimum number of removed ratings """
+    minRemoved: Int!
+
+    """Unix timestamp incl. millis"""
+    startTime: String!
+
+    """Unix timestamp incl. millis"""
+    endTime: String!
+  ): spammedTeachers
+
+  """Get current User """
+  user: User
+}
+
+type Rating implements Node {
+  adminReviewedAt: String
+  attendanceMandatory: String
+  clarityRating: Float
+  class: String
+  comment: UserComment
+  courseType: Int
+  date: String
+  difficultyRating: Float
+  flagStatus: String
+  grade: String
+  helpfulRating: Float
+  id: ID
+  isForCredit: Boolean
+  isForOnlineClass: Boolean
+  legacyId: Int
+  maskCount: Int
+  ratingTags: String
+  teacher: Teacher
+  teacherNote: TeacherNotes
+  textbookUse: Int
+  thumbs: [Thumb] @deprecated(reason: "Replaced by userThumbs")
+  thumbsDownTotal: Int
+  thumbsUpTotal: Int
+  userThumbs: [Thumb]
+  wouldTakeAgain: Int
+}
+
+"""A connection to a list of items."""
+type RatingConnection {
+  """Information to aid in pagination."""
+  edges: [RatingEdge]
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+}
+
+type ratingConnectionTypeConnection {
+  edges: [ratingConnectionTypeEdges]
+  pageInfo: ratingConnectionTypePageInfo
+}
+
+type ratingConnectionTypeEdges {
+  cursor: String
+  node: Rating
+}
+
+type ratingConnectionTypePageInfo {
+  endCursor: String
+  hasNextPage: Boolean
+  hasPreviousPage: Boolean
+  startCursor: String
+}
+
+"""An edge in a connection"""
+type RatingEdge {
+  """ cursor for use in pagination"""
+  cursor: String!
+
+  """The item at the end of the edge"""
+  node: Rating
+}
+
+type RelatedTeacher implements Node {
+  avgRating: Float
+  firstName: String
+  id: ID
+  lastName: String
+  legacyId: Int
+  school: School
+}
+
+type ResetFindEmailResponse {
+  email: String
+  validation: ValidationResult
+}
+
+type School implements Node {
+  avgRating: Float
+  city: String
+  departments: [Department]
+  id: ID
+  legacyId: Int
+  name: String
+  numRatings: Int
+  state: String
+  teachers: [Teacher]
+}
+
+type schoolConnectionTypeConnection {
+  edges: [schoolConnectionTypeEdges]
+  pageInfo: schoolConnectionTypePageInfo
+}
+
+type schoolConnectionTypeEdges {
+  cursor: String
+  node: School
+}
+
+type schoolConnectionTypePageInfo {
+  endCursor: String
+  hasNextPage: Boolean
+  hasPreviousPage: Boolean
+  startCursor: String
+}
+
+"""A connection to a list of items."""
+type SchoolSearchConnectionConnection {
+  """Information to aid in pagination."""
+  edges: [SchoolSearchConnectionEdge]
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+}
+
+"""An edge in a connection"""
+type SchoolSearchConnectionEdge {
+  """ cursor for use in pagination"""
+  cursor: String!
+
+  """The item at the end of the edge"""
+  node: School
+}
+
+input SchoolSearchQuery {
+  text: String
+}
+
+type Search {
+  schools(paginate: PaginateObject): schoolConnectionTypeConnection @deprecated(reason: "Use new search methods for corrected pagination and filtering")
+  teachers(paginate: PaginateObject): teacherConnectionTypeConnection @deprecated(reason: "Use new search methods for corrected pagination and filtering")
+}
+
+type spammedTeachers {
+  teachers: [Teacher]
+  validation: ValidationResult
+}
+
+type TagCreateMutationResponse {
+  tag: Tags
+  validation: ValidationResult
+}
+
+"""Create a tag"""
+input tagInput {
+  id: ID
+  name: String!
+  active: Boolean
+}
+
+type Tags implements Node {
+  active: Boolean
+  id: ID
+  legacyId: Int
+  name: String
+}
+
+type Teacher implements Node {
+  avgDifficulty: Float
+  avgRating: Float
+  courseCodes: [Course]
+  department: String
+  emailAlerts: Boolean
+  firstName: String
+  id: ID
+  isProfCurrentUser: Boolean
+  isSaved: Boolean
+  lastName: String
+  legacyId: Int
+  lockStatus: String
+  mostUsefulRating: Rating
+  notes(after: String, first: Int, before: String): notesConnectionTypeConnection
+  numNotes: Int
+  numRatings: Int
+  ratings(first: Int, last: Int, before: String, after: String, courseFilter: String): RatingConnection
+  relatedFullTeachers(before: String, after: String, first: Int, last: Int): TeacherConnection
+  relatedTeachers: [RelatedTeacher] @deprecated(reason: "Replaced by relatedFullTeachers\n")
+  school: School
+  teacherRatingTags: [TeacherRatingTags]
+  wouldTakeAgainPercent: Float
+}
+
+"""A connection to a list of items."""
+type TeacherConnection {
+  """Information to aid in pagination."""
+  edges: [TeacherEdge]
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+}
+
+type teacherConnectionTypeConnection {
+  edges: [teacherConnectionTypeEdges]
+  pageInfo: teacherConnectionTypePageInfo
+}
+
+type teacherConnectionTypeEdges {
+  cursor: String
+  node: Teacher
+}
+
+type teacherConnectionTypePageInfo {
+  endCursor: String
+  hasNextPage: Boolean
+  hasPreviousPage: Boolean
+  startCursor: String
+}
+
+"""An edge in a connection"""
+type TeacherEdge {
+  """ cursor for use in pagination"""
+  cursor: String!
+
+  """The item at the end of the edge"""
+  node: Teacher
+}
+
+type teacherMutationResponse {
+  teacher: Teacher
+  validation: ValidationResult
+}
+
+type TeacherNoteCreateResponse {
+  errors: String @deprecated(reason: "use validation field")
+  teacherNote: TeacherNotes
+  validation: ValidationResult
+}
+
+type TeacherNotes implements Node {
+  class: String
+  comment: UserComment
+  createDate: String
+  createdAt: String
+  flagStatus: String
+  id: ID
+  legacyId: Int
+  ratingId: Int
+  teacherId: ID
+  updateDate: String
+  updatedAt: String
+}
+
+"""Create a teacher note"""
+input teacherNotesInput {
+  comment: String
+  id: ID
+  ratingId: ID!
+  teacherId: ID!
+  class: String
+}
+
+type TeacherRatingTags implements Node {
+  id: ID
+  legacyId: Int
+  tagCount: Int
+  tagName: String
+}
+
+"""A connection to a list of items."""
+type TeacherSearchConnectionConnection {
+  """Information to aid in pagination."""
+  edges: [TeacherSearchConnectionEdge]
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+}
+
+"""An edge in a connection"""
+type TeacherSearchConnectionEdge {
+  """ cursor for use in pagination"""
+  cursor: String!
+
+  """The item at the end of the edge"""
+  node: Teacher
+}
+
+input TeacherSearchQuery {
+  text: String!
+
+  """School Base64 ID, Omit or leave empty to not filter by school."""
+  schoolID: ID
+}
+
+type Thumb implements Node {
+  Rating: Rating
+  id: ID
+  legacyId: Int
+  ratingId: Int
+  thumbsDown: Int
+  thumbsUp: Int
+  userId: Int
+}
+
+type User implements Node {
+  Email: String @deprecated(reason: "Replaced by email\n")
+  Type: String
+  currentStanding: String
+  departments: [Department]
+  email: String
+  emailConfirmed: Boolean
+  firstName: String
+  graduationYear: Int
+  id: ID
+  lastName: String
+  legacyId: Int
+  ratings(first: Int, before: String, after: String): ratingConnectionTypeConnection
+  savedProfessors(before: String, after: String, first: Int, last: Int): TeacherConnection
+  school: School
+  tags: [UserTags]
+  teacher: Teacher
+  teachers(first: Int, before: String, after: String): teacherConnectionTypeConnection @deprecated(reason: "Replaced by savedProfessors\n")
+}
+
+"""
+The `UserComment` scalar type represents sanitized user input filtered for profanity and code input. 
+"""
+scalar UserComment
+
+input UserInputObject {
+  currentStanding: String
+  schoolId: ID
+  departments: [DeptInputObject]
+  firstName: String
+  lastName: String
+  email: String!
+  password: String
+  graduationYear: Int
+}
+
+type UserMutationResponse {
+  user: User
+  validation: ValidationResult
+}
+
+type UserTags {
+  id: ID
+  name: String
+}
+
+type UserToggleSavedProfessorMutationResponse {
+  teacher: Teacher
+  validation: ValidationResult
+}
+
+type ValidationResponse {
+  validation: ValidationResult
+}
+
+type ValidationResult implements Node {
+  errors: [FieldErrorType]
+  id: ID
+  legacyId: Int
+  success: Boolean
+}
+
