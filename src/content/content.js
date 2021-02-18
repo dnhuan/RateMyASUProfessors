@@ -45,25 +45,18 @@ function parseProfName(elm) {
 }
 
 function compareProfName(profName, queryName) {
-  if (profName.split(" ")[0].indexOf(queryName.firstName) != -1) {
-    if (profName.split(" ")[1].indexOf(queryName.lastName) != -1) {
-      return true;
-    }
-  }
-  if (queryName.firstName.indexOf(profName.split(" ")[0]) != -1) {
-    if (queryName.lastName.indexOf(profName.split(" ")[1]) != -1) {
-      return true;
-    }
+  let simlilarity = stringSimilarity.compareTwoStrings(
+    profName,
+    `${queryName.firstName} ${queryName.lastName}`
+  );
+  if (simlilarity >= 0.8) {
+    return true;
   }
   return false;
 }
 
 async function fetchAndAppendProfData(name, profNameList) {
   let profID = await fetchProfID(name);
-  if (profID === null) {
-    console.log("Professor ID not found: ", name);
-    return;
-  }
   let profData = await fetchProfDataFromID(profID);
   if (profData === null) {
     console.log("Professor data not found: ", name);
@@ -74,8 +67,6 @@ async function fetchAndAppendProfData(name, profNameList) {
   profNameList.forEach((prof) => {
     if (compareProfName(prof.name, profData)) {
       appendProfDataToDOM(prof.domElem, profData);
-    } else {
-      // unmatch
     }
   });
 }
@@ -90,7 +81,7 @@ function appendProfDataToDOM(domElem, profData) {
     colorCode = "#68FFBE";
   }
   const divFormat = `<div style="background-color:${colorCode}">
-  <a style="color:blue" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${
+  <a style="color:blue" target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${
     profData.legacyId
   }">
     <div>Average rating: ${profData.avgRating}</div>
@@ -117,6 +108,9 @@ async function fetchProfID(name) {
 }
 
 async function fetchProfDataFromID(ID) {
+  if (ID === null) {
+    return null;
+  }
   try {
     let response = await sendMessage({
       contentScriptQuery: "queryProfData",
@@ -132,6 +126,7 @@ async function fetchProfDataFromID(ID) {
 function sendMessage(message) {
   return new Promise((resolve, _) => {
     chrome.runtime.sendMessage(message, (res) => {
+      console.log(JSON.stringify(res));
       resolve(res);
     });
   });
