@@ -4,12 +4,16 @@
   "description": "Rate My Professors Plugin for ASU Class Search",
   "background": {
     "scripts": ["background.js"],
-    "persistent": true
+    "persistent": false
   },
   "content_scripts": [
     {
       "matches": ["https://*.asu.edu/catalog*"],
-      "js": ["content/content.js", "content/jquery-3.5.1.min.js"]
+      "js": [
+        "content/content.js",
+        "content/jquery-3.5.1.min.js",
+        "content/string-similarity.min.js"
+      ]
     }
   ],
   "permissions": [

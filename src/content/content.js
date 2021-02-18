@@ -72,6 +72,10 @@ async function fetchAndAppendProfData(name, profNameList) {
 }
 
 function appendProfDataToDOM(domElem, profData) {
+  if (profData.numRatings == 0) {
+    return;
+  }
+  let colorFont = "#0F0F0F";
   let colorCode = "";
   if (profData.avgRating < 2.5) {
     colorCode = "#FF9C9C";
@@ -81,13 +85,15 @@ function appendProfDataToDOM(domElem, profData) {
     colorCode = "#68FFBE";
   }
   const divFormat = `<div style="background-color:${colorCode}">
-  <a style="color:blue" target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${
+  <a style="color:${colorFont}" target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${
     profData.legacyId
   }">
-    <div>Average rating: ${profData.avgRating}</div>
-    <div>Rating count: ${profData.numRatings}</div>
+    <div><span style="font-size:2em;font-weight: bold;">${
+      profData.avgRating
+    }</span>/5</div>
     <div>Average difficulty: ${profData.avgDifficulty}</div>
-    <div>${profData.wouldTakeAgainPercent.toFixed(2)}% would take again</div>
+    <div>${profData.wouldTakeAgainPercent.toFixed(0)}% would take again</div>
+    <div>${profData.numRatings} rating(s)</div>
   </a>
   </div>`;
 
