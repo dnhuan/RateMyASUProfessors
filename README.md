@@ -3,7 +3,7 @@ This Chrome Extension helps finding the perfect professor for your next classes 
 
 ## Demo
 Without RateMyASUProfessors:
-![](docs/withoutExtension.png)
+![Without RateMyASUProfessors](docs/withoutExtension.png)
 
 With RateMyASUProfessors:
-![](docs/withExtension.gif)
+![With RateMyASUProfessors](docs/withExtension.gif)
