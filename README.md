@@ -2,10 +2,10 @@
 This Chrome Extension helps finding the perfect professor for your next classes at ASU
 
 ## Demo
-Without RateMyASUProfessors:
+Class registration site without RateMyASUProfessors:
 
 ![Without RateMyASUProfessors](docs/withoutExtension.png)
 
-With RateMyASUProfessors:
+Class registration site with RateMyASUProfessors:
 
 ![With RateMyASUProfessors](docs/withExtension.gif)
