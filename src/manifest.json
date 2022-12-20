@@ -1,26 +1,28 @@
 {
-  "name": "ASU Class Search Helper",
-  "version": "1.0",
-  "description": "Rate My Professors Plugin for ASU Class Search",
-  "background": {
-    "scripts": ["background.js"],
-    "persistent": false
-  },
-  "content_scripts": [
-    {
-      "css": ["content/styles.css"],
-      "js": [
-        "content/content.js",
-        "content/jquery-3.5.1.min.js",
-        "content/string-similarity.min.js"
-      ],
-      "matches": ["https://*.asu.edu/catalog*"]
-    }
-  ],
-  "permissions": [
-    "activeTab",
-    "https://www.ratemyprofessors.com/*",
-    "background"
-  ],
-  "manifest_version": 2
+	"name": "Rate My ASU Professors",
+	"version": "2.0",
+	"description": "Rate My Professors ASU Plugin for ASU Class Search",
+	"background": {
+		"service_worker": "background.js"
+	},
+	"content_scripts": [
+		{
+			"matches": ["https://catalog.apps.asu.edu/*"],
+			"css": ["content/styles.css"]
+		},
+		{
+			"matches": ["https://*.asu.edu/catalog/classes*"],
+			"js": [
+				"content/jquery-3.5.1.min.js",
+				"content/string-similarity.min.js",
+				"content/content.js"
+			]
+		}
+	],
+	"permissions": ["activeTab", "background"],
+	"host_permissions": [
+		"https://*.asu.edu/*",
+		"https://www.ratemyprofessors.com/*"
+	],
+	"manifest_version": 3
 }
