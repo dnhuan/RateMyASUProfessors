@@ -100,9 +100,14 @@ async function processCurrentRow(row) {
 	let profReviewList = await Promise.all(
 		profNameList.map((profName) => getReview(profName))
 	);
-
+	log(profReviewList);
 	$(row).children(".rmp").empty();
 	for (profReview of profReviewList) {
+		if (profReview === null) {
+			$(row).children(".rmp").first().append($("<p>").text("N/A"));
+			continue;
+		}
+
 		// Insert score into DOM
 		let HydratedProfScoreComp = ProfScoreComp(profReview);
 		$(row).children(".rmp").first().append(HydratedProfScoreComp);
@@ -131,13 +136,11 @@ async function getReview(profName) {
 	let profID = await fetchProfIDFromName(profName);
 	let profReview = await fetchProfReviewFromID(profID);
 
-	if (!isNameSimilar(profName, profReview)) {
+	if (profReview === null || !isNameSimilar(profName, profReview)) {
 		return null;
 	}
 
-	if (profReview !== null) {
-		profReview["name"] = profName;
-	}
+	profReview["name"] = profName;
 
 	return profReview;
 }
@@ -177,7 +180,7 @@ function decorateInstructorDiv(instructorDiv, profData) {
 
 function ProfScoreComp(profData) {
 	if (profData.numRatings == 0) {
-		return `<a style="color:#0F0F0F" target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${profData.legacyId}">N/A</a>`;
+		return `<a style="color:#0F0F0F;text-decoration:none;" target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${profData.legacyId}">N/A</a>`;
 	}
 
 	let colorCode = "";
@@ -262,6 +265,7 @@ async function fetchProfReviewFromID(ID) {
 function sendMessage(message) {
 	return new Promise((resolve, _) => {
 		chrome.runtime.sendMessage(message, (res) => {
+			log(JSON.stringify(res));
 			resolve(res);
 		});
 	});
