@@ -60,9 +60,14 @@ function onRenderHandler() {
 }
 
 function addRMPCol() {
+	if ($('.class-results-header-cell:contains("RMP")').length > 0) {
+		log("RMP COL EXISTED");
+		return;
+	}
+
 	$(".class-results-rows")[0].style.gridTemplateColumns = "repeat(15, 1fr)";
 	let placeholderHeader = $("<div>")
-		.addClass("class-results-cell")
+		.addClass("class-results-header-cell")
 		.text("RMP");
 	$(".instructor.class-results-header-cell").after(placeholderHeader);
 
