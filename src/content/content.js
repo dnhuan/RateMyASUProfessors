@@ -63,55 +63,6 @@ function onRenderHandler() {
 	processResultTable();
 }
 
-function isStaff(instructorDiv) {
-	return instructorDiv.text().includes("Staff");
-}
-
-function processResultTable() {
-	let allRows = $(".class-accordion");
-	for (row of allRows) {
-		processCurrentRow(row);
-	}
-}
-
-async function processCurrentRow(row) {
-	let instructorDiv = $(row).children(".instructor").first();
-	if (isStaff(instructorDiv)) {
-		$(row).children(".rmp").first().text("N/A");
-		return;
-	}
-
-	let profNameList = parseProfNameList(instructorDiv);
-	let profReviewList = await Promise.all(
-		profNameList.map((profName) => getReview(profName))
-	);
-	log(profReviewList);
-}
-
-async function getReview(profName) {
-	let profID = await fetchProfIDFromName(profName);
-	let profReview = await fetchProfReviewFromID(profID);
-
-	if (!isNameSimilar(profName, profReview)) {
-		return null;
-	}
-
-	if (profReview !== null) {
-		profReview["name"] = profName;
-	}
-
-	return profReview;
-}
-
-function parseProfNameList(instructorDiv) {
-	if (instructorDiv.children("span").length == 0) {
-		// only one prof
-		return [instructorDiv.text()];
-	}
-	let nameSpanList = instructorDiv.children("span").first().children("a");
-	return nameSpanList.map((i, nameSpan) => $(nameSpan).text()).toArray();
-}
-
 function addRMPCol() {
 	$(".class-results-rows")[0].style.gridTemplateColumns = "repeat(15, 1fr)";
 
@@ -131,46 +82,64 @@ function addRMPCol() {
 	}
 }
 
-// function getDataFromDOM() {
-// 	let domList = [];
-// 	let profDataSet = [];
-
-// 	// Get all rows from table
-// 	$("#CatalogList > tbody > tr").each((idx, elm) => {
-// 		domList.push(elm);
-// 	});
-
-// 	// Parse professors data - get name
-// 	let profNameList = domList.map((elm) => {
-// 		let profName = parseProfName(elm);
-// 		if (profDataSet.indexOf(profName) == -1) {
-// 			profDataSet.push(profName);
-// 		}
-// 		return {
-// 			domElem: elm,
-// 			name: parseProfName(elm),
-// 		};
-// 	});
-
-// 	// Process data set
-// 	profDataSet.map((prof) => fetchAndAppendProfData(prof, profNameList));
-// }
-
-function isNameSimilar(profName, queryName) {
-	let simlilarity = stringSimilarity.compareTwoStrings(
-		profName,
-		`${queryName.firstName} ${queryName.lastName}`
-	);
-	if (simlilarity >= 0.8) {
-		return true;
+function processResultTable() {
+	let allRows = $(".class-accordion");
+	for (row of allRows) {
+		processCurrentRow(row);
 	}
-	return false;
 }
 
-function appendProfDataToDOM(domElem, profData) {
-	if (profData.numRatings == 0) {
-		// No ratings
+async function processCurrentRow(row) {
+	let instructorDiv = $(row).children(".instructor").first();
+	if (instructorDiv.text().includes("Staff")) {
+		$(row).children(".rmp").first().text("N/A");
 		return;
+	}
+
+	let profNameList = parseProfNameList(instructorDiv);
+	let profReviewList = await Promise.all(
+		profNameList.map((profName) => getReview(profName))
+	);
+	log(profReviewList);
+	$(row).children(".rmp").empty();
+	for (profReview of profReviewList) {
+		$(row).children(".rmp").first().append(ProfReviewComp(profReview));
+	}
+}
+
+function parseProfNameList(instructorDiv) {
+	if (instructorDiv.children("span").length == 0) {
+		// only one prof
+		return [instructorDiv.text()];
+	}
+	let nameSpanList = instructorDiv.children("span").first().children("a");
+	return nameSpanList.map((i, nameSpan) => $(nameSpan).text()).toArray();
+}
+
+function isNameSimilar(profName, queryName) {
+	let rmpName = `${queryName.firstName} ${queryName.lastName}`;
+	let simlilarity = stringSimilarity.compareTwoStrings(profName, rmpName);
+	return simlilarity >= 0.8;
+}
+
+async function getReview(profName) {
+	let profID = await fetchProfIDFromName(profName);
+	let profReview = await fetchProfReviewFromID(profID);
+
+	if (!isNameSimilar(profName, profReview)) {
+		return null;
+	}
+
+	if (profReview !== null) {
+		profReview["name"] = profName;
+	}
+
+	return profReview;
+}
+
+function ProfReviewComp(profData) {
+	if (profData.numRatings == 0) {
+		return `<a target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${profData.legacyId}">N/A</a>`;
 	}
 	let colorFont = "#0F0F0F";
 	let colorCode = "";
@@ -181,20 +150,22 @@ function appendProfDataToDOM(domElem, profData) {
 	} else {
 		colorCode = "#68FFBE";
 	}
-	const divFormat = `<div style="background-color:${colorCode}">
-  <a style="color:${colorFont}" target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${
+	const divFormat = `
+<div style="background-color:${colorCode}">
+	<a style="color:${colorFont}" target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${
 		profData.legacyId
 	}">
-    <div><span style="font-size:2em;font-weight: bold;">${
-		profData.avgRating
-	}</span>/5</div>
-    <div>Average difficulty: ${profData.avgDifficulty}</div>
-    <div>${profData.wouldTakeAgainPercent.toFixed(0)}% would take again</div>
-    <div>${profData.numRatings} rating(s)</div>
-  </a>
-  </div>`;
+	   <div><span style="font-size:2em;font-weight: bold;">${
+			profData.avgRating
+		}</span>/5
+	   </div>
+	   <div>Average difficulty: ${profData.avgDifficulty}</div>
+	   <div>${profData.wouldTakeAgainPercent.toFixed(0)}% would take again</div>
+	   <div>${profData.numRatings} rating(s)</div>
+	</a>
+ </div>`;
 
-	$(domElem).find(".instructorListColumnValue").append(divFormat);
+	return divFormat;
 }
 
 async function fetchProfIDFromName(name) {
