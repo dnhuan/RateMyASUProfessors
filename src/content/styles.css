@@ -1,1 +1,6 @@
-/*https://blog.lateral.io/2016/04/create-chrome-extension-modify-websites-html-css/ */
+/* Medium devices (tablets, less than 992px) */
+@media (max-width: 991.98px) {
+	#class-results .class-accordion .rmp {
+		padding-left: 10px;
+	}
+}

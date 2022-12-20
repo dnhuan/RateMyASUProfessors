@@ -54,61 +54,109 @@ function onRenderHandler() {
 		log("NONE");
 		return;
 	}
-
 	log("FOUND");
+
+	// Set up RMP column
 	addRMPCol();
+
+	// for each row, get each row, fetch data, append data
+	processResultTable();
 }
 
-function addRMPCol() {
-	if ($('.class-results-header-cell:contains("RMP")').length > 0) {
-		log("RMP COL EXISTED");
+function isStaff(instructorDiv) {
+	return instructorDiv.text().includes("Staff");
+}
+
+function processResultTable() {
+	let allRows = $(".class-accordion");
+	for (row of allRows) {
+		processCurrentRow(row);
+	}
+}
+
+async function processCurrentRow(row) {
+	let instructorDiv = $(row).children(".instructor").first();
+	if (isStaff(instructorDiv)) {
+		$(row).children(".rmp").first().text("N/A");
 		return;
 	}
 
+	let profNameList = parseProfNameList(instructorDiv);
+	let profReviewList = await Promise.all(
+		profNameList.map((profName) => getReview(profName))
+	);
+	log(profReviewList);
+}
+
+async function getReview(profName) {
+	let profID = await fetchProfIDFromName(profName);
+	let profReview = await fetchProfReviewFromID(profID);
+
+	if (!isNameSimilar(profName, profReview)) {
+		return null;
+	}
+
+	if (profReview !== null) {
+		profReview["name"] = profName;
+	}
+
+	return profReview;
+}
+
+function parseProfNameList(instructorDiv) {
+	if (instructorDiv.children("span").length == 0) {
+		// only one prof
+		return [instructorDiv.text()];
+	}
+	let nameSpanList = instructorDiv.children("span").first().children("a");
+	return nameSpanList.map((i, nameSpan) => $(nameSpan).text()).toArray();
+}
+
+function addRMPCol() {
 	$(".class-results-rows")[0].style.gridTemplateColumns = "repeat(15, 1fr)";
-	let placeholderHeader = $("<div>")
-		.addClass("class-results-header-cell")
-		.text("RMP");
-	$(".instructor.class-results-header-cell").after(placeholderHeader);
 
-	let placeholder = $("<div>")
-		.addClass("class-results-cell")
-		.text("Loading reviews...");
-	$(".instructor.class-results-cell").after(placeholder);
+	if ($(".class-results-header-cell.rmp").length == 0) {
+		let placeholderHeader = $("<div>")
+			.addClass("class-results-header-cell")
+			.addClass("rmp")
+			.text("RMP");
+		$(".instructor.class-results-header-cell").after(placeholderHeader);
+	}
+	if ($(".class-results-cell.rmp").length == 0) {
+		let placeholder = $("<div>")
+			.addClass("class-results-cell")
+			.addClass("rmp")
+			.text("Loading reviews...");
+		$(".instructor.class-results-cell").after(placeholder);
+	}
 }
 
-function getDataFromDOM() {
-	let domList = [];
-	let profDataSet = [];
+// function getDataFromDOM() {
+// 	let domList = [];
+// 	let profDataSet = [];
 
-	// Get all rows from table
-	$("#CatalogList > tbody > tr").each((idx, elm) => {
-		domList.push(elm);
-	});
+// 	// Get all rows from table
+// 	$("#CatalogList > tbody > tr").each((idx, elm) => {
+// 		domList.push(elm);
+// 	});
 
-	// Parse professors data - get name
-	let profNameList = domList.map((elm) => {
-		let profName = parseProfName(elm);
-		if (profDataSet.indexOf(profName) == -1) {
-			profDataSet.push(profName);
-		}
-		return {
-			domElem: elm,
-			name: parseProfName(elm),
-		};
-	});
+// 	// Parse professors data - get name
+// 	let profNameList = domList.map((elm) => {
+// 		let profName = parseProfName(elm);
+// 		if (profDataSet.indexOf(profName) == -1) {
+// 			profDataSet.push(profName);
+// 		}
+// 		return {
+// 			domElem: elm,
+// 			name: parseProfName(elm),
+// 		};
+// 	});
 
-	// Process data set
-	profDataSet.map((prof) => fetchAndAppendProfData(prof, profNameList));
-}
+// 	// Process data set
+// 	profDataSet.map((prof) => fetchAndAppendProfData(prof, profNameList));
+// }
 
-function parseProfName(elm) {
-	let raw = elm.className;
-	let rawData = raw.split("-");
-	return `${rawData[4]} ${rawData[5]}`;
-}
-
-function compareProfName(profName, queryName) {
+function isNameSimilar(profName, queryName) {
 	let simlilarity = stringSimilarity.compareTwoStrings(
 		profName,
 		`${queryName.firstName} ${queryName.lastName}`
@@ -119,24 +167,9 @@ function compareProfName(profName, queryName) {
 	return false;
 }
 
-async function fetchAndAppendProfData(name, profNameList) {
-	let profID = await fetchProfID(name);
-	let profData = await fetchProfDataFromID(profID);
-	if (profData === null) {
-		console.log("Professor data not found: ", name);
-		return;
-	}
-
-	// display data on frontend
-	profNameList.forEach((prof) => {
-		if (compareProfName(prof.name, profData)) {
-			appendProfDataToDOM(prof.domElem, profData);
-		}
-	});
-}
-
 function appendProfDataToDOM(domElem, profData) {
 	if (profData.numRatings == 0) {
+		// No ratings
 		return;
 	}
 	let colorFont = "#0F0F0F";
@@ -164,7 +197,7 @@ function appendProfDataToDOM(domElem, profData) {
 	$(domElem).find(".instructorListColumnValue").append(divFormat);
 }
 
-async function fetchProfID(name) {
+async function fetchProfIDFromName(name) {
 	try {
 		let response = await sendMessage({
 			contentScriptQuery: "queryProfID",
@@ -177,7 +210,7 @@ async function fetchProfID(name) {
 	}
 }
 
-async function fetchProfDataFromID(ID) {
+async function fetchProfReviewFromID(ID) {
 	if (ID === null) {
 		return null;
 	}
@@ -196,7 +229,7 @@ async function fetchProfDataFromID(ID) {
 function sendMessage(message) {
 	return new Promise((resolve, _) => {
 		chrome.runtime.sendMessage(message, (res) => {
-			console.log(JSON.stringify(res));
+			// console.log(JSON.stringify(res));
 			resolve(res);
 		});
 	});
