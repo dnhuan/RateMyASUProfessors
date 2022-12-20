@@ -18,13 +18,13 @@ function log(message) {
 function startObserver() {
 	log("Page fully loaded");
 	// trigger first time
-	main();
+	onRenderHandler();
 
 	// Set mutation observer on loading spinner to wait for table reload
+	// TODO: Check for table on page load
 	const observer = new MutationObserver((mutations) => {
 		mutations.forEach((mutation) => {
 			// check if a node is removed in this mutation
-			log(mutation);
 			if (mutation.removedNodes.length > 0) {
 				// check if the removed node is the loading spinner
 				if (
@@ -36,8 +36,8 @@ function startObserver() {
 					// wait for table to load
 					setTimeout(() => {
 						log("Table loaded");
-						main();
-					}, 1000);
+						onRenderHandler();
+					}, 100);
 				}
 			}
 		});
@@ -48,13 +48,28 @@ function startObserver() {
 	observer.observe(reactRootDOM, { subtree: true, childList: true });
 }
 
-function main() {
+function onRenderHandler() {
 	// check if there is h1 tag with content "No classes found"
 	if ($('h2:contains("No classes found")').length > 0) {
-		log("NONE FOUND");
+		log("NONE");
 		return;
 	}
+
 	log("FOUND");
+	addRMPCol();
+}
+
+function addRMPCol() {
+	$(".class-results-rows")[0].style.gridTemplateColumns = "repeat(15, 1fr)";
+	let placeholderHeader = $("<div>")
+		.addClass("class-results-cell")
+		.text("RMP");
+	$(".instructor.class-results-header-cell").after(placeholderHeader);
+
+	let placeholder = $("<div>")
+		.addClass("class-results-cell")
+		.text("Loading reviews...");
+	$(".instructor.class-results-cell").after(placeholder);
 }
 
 function getDataFromDOM() {
