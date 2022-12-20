@@ -38,13 +38,13 @@ query ($id: ID!) {
 }
 `;
 
-const queryProfID = async function queryProfIDAsync(profName, sendResponse) {
-	try {
+const fetchProfIDFallbackLoop = (profName) => {
+	return new Promise(async (resolve, reject) => {
 		let response = null;
-
+		let raw_response = null;
 		for (let i = 0; i < SCHOOL_IDS.length; i++) {
 			const SCHOOL_ID = SCHOOL_IDS[i];
-			const raw_response = await fetch(
+			raw_response = await fetch(
 				"https://www.ratemyprofessors.com/graphql",
 				{
 					method: "POST",
@@ -62,38 +62,64 @@ const queryProfID = async function queryProfIDAsync(profName, sendResponse) {
 
 			response = await raw_response.json();
 			if (response.data.newSearch.teachers.edges.length !== 0) {
-				break;
+				resolve(response);
+				return;
 			}
 		}
 
+		resolve(response);
+		return;
+	});
+};
+
+const profIDCache = new Map();
+const fetchProfID = async (profName) => {
+	if (!profIDCache.has(profName)) {
+		const profIDFetch = fetchProfIDFallbackLoop(profName);
+		profIDCache.set(profName, profIDFetch);
+	}
+	return profIDCache.get(profName);
+};
+
+const queryProfID = async function queryProfIDAsync(profName, sendResponse) {
+	try {
+		const response = await fetchProfID(profName);
 		sendResponse(response);
 	} catch (error) {
 		sendResponse(new Error(error));
 	}
 };
 
-// const profDataCache = new Map();
-
+const profDataCache = new Map();
 const fetchProfData = (profID) => {
-	return fetch("https://www.ratemyprofessors.com/graphql", {
-		method: "POST",
-		headers: {
-			Authorization: AUTHORIZATION_TOKEN,
-		},
-		body: JSON.stringify({
-			query: PROFESSOR_DATA,
-			variables: {
-				id: profID,
-			},
-		}),
-	});
+	if (!profDataCache.has(profID)) {
+		const profDataFetch = fetch(
+			"https://www.ratemyprofessors.com/graphql",
+			{
+				method: "POST",
+				headers: {
+					Authorization: AUTHORIZATION_TOKEN,
+				},
+				body: JSON.stringify({
+					query: PROFESSOR_DATA,
+					variables: {
+						id: profID,
+					},
+				}),
+			}
+		);
+		// return profDataFetch;
+		profDataCache.set(profID, profDataFetch);
+	}
+
+	return profDataCache.get(profID);
 };
 
 const queryProfData = async function queryProfDataAsync(profID, sendResponse) {
 	try {
 		const raw_response = await fetchProfData(profID);
+		const response = await raw_response.clone().json();
 
-		const response = await raw_response.json();
 		sendResponse(response);
 	} catch (error) {
 		sendResponse(new Error(error));
