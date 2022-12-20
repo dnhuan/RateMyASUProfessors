@@ -100,10 +100,15 @@ async function processCurrentRow(row) {
 	let profReviewList = await Promise.all(
 		profNameList.map((profName) => getReview(profName))
 	);
-	log(profReviewList);
+
 	$(row).children(".rmp").empty();
 	for (profReview of profReviewList) {
-		$(row).children(".rmp").first().append(ProfReviewComp(profReview));
+		// Insert score into DOM
+		let HydratedProfScoreComp = ProfScoreComp(profReview);
+		$(row).children(".rmp").first().append(HydratedProfScoreComp);
+
+		// Decorate profName
+		decorateInstructorDiv(instructorDiv, profReview);
 	}
 }
 
@@ -135,6 +140,63 @@ async function getReview(profName) {
 	}
 
 	return profReview;
+}
+
+function decorateInstructorDiv(instructorDiv, profData) {
+	if (profData.numRatings == 0) {
+		return;
+	}
+
+	let colorCode = "";
+	if (profData.avgRating < 2.5) {
+		colorCode = "#FF9C9C";
+	} else if (profData.avgRating < 3.5) {
+		colorCode = "#FFFF68";
+	} else {
+		colorCode = "#68FFBE";
+	}
+
+	if (instructorDiv.children("span").length == 0) {
+		// only one prof
+		if (instructorDiv.text() === profData.name) {
+			instructorDiv
+				.children("a")
+				.first()
+				.css("background-color", colorCode);
+		}
+	}
+
+	let nameSpanList = instructorDiv.children("span").first().children("a");
+	for (nameSpan of nameSpanList) {
+		let name = $(nameSpan).text();
+		if (name === profData.name) {
+			$(nameSpan).css("background-color", colorCode);
+		}
+	}
+}
+
+function ProfScoreComp(profData) {
+	if (profData.numRatings == 0) {
+		return `<a style="color:#0F0F0F" target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${profData.legacyId}">N/A</a>`;
+	}
+
+	let colorCode = "";
+	if (profData.avgRating < 2.5) {
+		colorCode = "#FF9C9C";
+	} else if (profData.avgRating < 3.5) {
+		colorCode = "#FFFF68";
+	} else {
+		colorCode = "#68FFBE";
+	}
+	const divFormat = `
+<div style="width:2.4rem;padding:2px;background-color:${colorCode}">
+	<a style="color:#0F0F0F;width:100%;text-decoration:none;" target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${profData.legacyId}">
+	   		<span style="font-size:1rem">${profData.avgRating}</span>
+			<span style="float:right"><sup>/5</sup></span>
+	</a>
+ </div>`;
+
+	return divFormat;
 }
 
 function ProfReviewComp(profData) {
@@ -200,7 +262,6 @@ async function fetchProfReviewFromID(ID) {
 function sendMessage(message) {
 	return new Promise((resolve, _) => {
 		chrome.runtime.sendMessage(message, (res) => {
-			// console.log(JSON.stringify(res));
 			resolve(res);
 		});
 	});
