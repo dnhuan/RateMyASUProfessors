@@ -80,6 +80,11 @@ function addRMPCol() {
 			.text("Loading reviews...");
 		$(".instructor.class-results-cell").after(placeholder);
 	}
+
+	let tableRows = $(".course");
+	for (row of tableRows) {
+		$(row).css("grid-column-start", "1");
+	}
 }
 
 function processResultTable() {
