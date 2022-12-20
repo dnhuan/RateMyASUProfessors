@@ -47,7 +47,6 @@ const queryProfID = async function queryProfIDAsync(profName, sendResponse) {
 			const raw_response = await fetch(
 				"https://www.ratemyprofessors.com/graphql",
 				{
-					cache: "force-cache",
 					method: "POST",
 					headers: {
 						Authorization: AUTHORIZATION_TOKEN,
@@ -73,6 +72,34 @@ const queryProfID = async function queryProfIDAsync(profName, sendResponse) {
 	}
 };
 
+// const profDataCache = new Map();
+
+const fetchProfData = (profID) => {
+	return fetch("https://www.ratemyprofessors.com/graphql", {
+		method: "POST",
+		headers: {
+			Authorization: AUTHORIZATION_TOKEN,
+		},
+		body: JSON.stringify({
+			query: PROFESSOR_DATA,
+			variables: {
+				id: profID,
+			},
+		}),
+	});
+};
+
+const queryProfData = async function queryProfDataAsync(profID, sendResponse) {
+	try {
+		const raw_response = await fetchProfData(profID);
+
+		const response = await raw_response.json();
+		sendResponse(response);
+	} catch (error) {
+		sendResponse(new Error(error));
+	}
+};
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	switch (request.contentScriptQuery) {
 		case "queryProfID":
@@ -80,22 +107,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			return true;
 
 		case "queryProfData":
-			fetch("https://www.ratemyprofessors.com/graphql", {
-				cache: "force-cache",
-				method: "POST",
-				headers: {
-					Authorization: AUTHORIZATION_TOKEN,
-				},
-				body: JSON.stringify({
-					query: PROFESSOR_DATA,
-					variables: {
-						id: request.profID,
-					},
-				}),
-			})
-				.then((res) => res.json())
-				.then((res) => sendResponse(res))
-				.catch((err) => sendResponse(new Error(err)));
+			queryProfData(request.profID, sendResponse);
 			return true;
 
 		default:
