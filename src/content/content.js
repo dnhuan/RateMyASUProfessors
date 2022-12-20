@@ -73,13 +73,12 @@ function addRMPCol() {
 			.text("RMP");
 		$(".instructor.class-results-header-cell").after(placeholderHeader);
 	}
-	if ($(".class-results-cell.rmp").length == 0) {
-		let placeholder = $("<div>")
-			.addClass("class-results-cell")
-			.addClass("rmp")
-			.text("Loading reviews...");
-		$(".instructor.class-results-cell").after(placeholder);
-	}
+	$(".class-results-cell.rmp").remove();
+	let placeholder = $("<div>")
+		.addClass("class-results-cell")
+		.addClass("rmp")
+		.text("Loading reviews...");
+	$(".instructor.class-results-cell").after(placeholder);
 
 	let tableRows = $(".course");
 	for (row of tableRows) {
