@@ -12,7 +12,7 @@ function waitForFirstLoad() {
 }
 
 function log(message) {
-	console.log(`%cRMAP`, "color: #26bfa5;", message);
+	// console.log(`%cRMAP`, "color: #26bfa5;", message);
 }
 
 function startObserver() {
@@ -269,7 +269,6 @@ async function fetchProfReviewFromID(ID) {
 function sendMessage(message) {
 	return new Promise((resolve, _) => {
 		chrome.runtime.sendMessage(message, (res) => {
-			log(JSON.stringify(res));
 			resolve(res);
 		});
 	});

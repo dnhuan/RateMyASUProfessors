@@ -1,7 +1,8 @@
 {
 	"name": "Rate My ASU Professors",
-	"version": "2.0",
+	"version": "2.1.0",
 	"description": "Rate My Professors ASU Plugin for ASU Class Search",
+	"author": "huan@huandoan.tech",
 	"background": {
 		"service_worker": "background.js"
 	},
@@ -24,5 +25,11 @@
 		"https://*.asu.edu/*",
 		"https://www.ratemyprofessors.com/*"
 	],
+	"icons": {
+		"16": "icon16.png",
+		"32": "icon32.png",
+		"48": "icon48.png",
+		"128": "icon128.png"
+	},
 	"manifest_version": 3
 }
