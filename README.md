@@ -10,7 +10,7 @@ Link to extension: [Chrome Web Store](https://chrome.google.com/webstore/detail/
 ### Option 2: Install directly from source code
 
 1. Clone this repository
-2. Open to Google Chrome
+2. Launch Google Chrome
 3. Navigate to "**chrome://extensions**"
 4. Select "**Load unpacked**"
 5. Select folder "**src/**" from this repository
