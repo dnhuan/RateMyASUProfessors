@@ -106,18 +106,25 @@ async function processCurrentRow(row) {
 	);
 	log(profReviewList);
 	$(row).children(".rmp").empty();
+
+	let hasNext = false;
 	for (profReview of profReviewList) {
 		if (profReview === null) {
 			$(row).children(".rmp").first().append($("<p>").text("N/A"));
 			continue;
 		}
 
+		//check if comma is neccessary
+		const currentIndex = profReviewList.indexOf(profReview);
+		hasNext = profReviewList[currentIndex + 1] !== undefined && profReviewList[currentIndex + 1] !== null;
+		
 		// Insert score into DOM
-		let HydratedProfScoreComp = ProfScoreComp(profReview);
+		//let HydratedProfScoreComp = ProfScoreComp(profReview);
+		let HydratedProfScoreComp = ProfReviewComp(profReview, hasNext);
 		$(row).children(".rmp").first().append(HydratedProfScoreComp);
 
 		// Decorate profName
-		decorateInstructorDiv(instructorDiv, profReview);
+		//decorateInstructorDiv(instructorDiv, profReview);
 	}
 }
 
@@ -206,7 +213,7 @@ function ProfScoreComp(profData) {
 	return divFormat;
 }
 
-function ProfReviewComp(profData) {
+function ProfReviewComp(profData, hasNext) {
 	if (profData.numRatings == 0) {
 		return `<a target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${profData.legacyId}">N/A</a>`;
 	}
@@ -215,24 +222,32 @@ function ProfReviewComp(profData) {
 	if (profData.avgRating < 2.5) {
 		colorCode = "#FF9C9C";
 	} else if (profData.avgRating < 3.5) {
-		colorCode = "#FFFF68";
+		colorCode = "#FFD700";
 	} else {
-		colorCode = "#68FFBE";
+		colorCode = "#03C03C";
 	}
+
+	if(hasNext){
+		addComma = ", "
+	}else{
+		addComma = " "
+	}
+
 	const divFormat = `
-<div style="background-color:${colorCode}">
-	<a style="color:${colorFont}" target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${
-		profData.legacyId
-	}">
-	   <div><span style="font-size:2em;font-weight: bold;">${
-			profData.avgRating
-		}</span>/5
-	   </div>
-	   <div>Average difficulty: ${profData.avgDifficulty}</div>
-	   <div>${profData.wouldTakeAgainPercent.toFixed(0)}% would take again</div>
-	   <div>${profData.numRatings} rating(s)</div>
+	<div class="prof-container">
+	<a style="text-decoration: none;" target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${profData.legacyId}">
+	<div>
+          <span class="prof-anchor" style="color:${colorCode}; font-size:1.5em; font-weight: bold;">${profData.avgRating}</span><span style="color:black;">${addComma}</span>
+    </div>
 	</a>
- </div>`;
+	<div class="prof-info" >
+	<div class="prof-namebox">${profData.name} <span style="color:${colorCode}; font-weight: bold;">${profData.avgRating}</span>/5</div>
+	<div>${profData.avgDifficulty} difficulty</div>
+	<div>${profData.wouldTakeAgainPercent.toFixed(0)}% would take again</div>
+	<div>${profData.numRatings} rating(s)</div>
+	</div>
+	</div>
+  `;
 
 	return divFormat;
 }
