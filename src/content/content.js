@@ -73,12 +73,6 @@ function addRMPCol() {
 			.text("RMP");
 		$(".instructor.class-results-header-cell").after(placeholderHeader);
 	}
-	$(".class-results-cell.rmp").remove();
-	let placeholder = $("<div>")
-		.addClass("class-results-cell")
-		.addClass("rmp")
-		.text("Loading reviews...");
-	$(".instructor.class-results-cell").after(placeholder);
 
 	let tableRows = $(".course");
 	for (row of tableRows) {
@@ -89,6 +83,14 @@ function addRMPCol() {
 function processResultTable() {
 	let allRows = $(".class-accordion");
 	for (row of allRows) {
+		// if class rmp cell does not exist, create it and append to row, after instructor cell
+		if ($(row).children(".rmp").length == 0) {
+			let placeholder = $("<div>")
+				.addClass("class-results-cell")
+				.addClass("rmp")
+				.text("Loading reviews...");
+			$(row).children(".instructor").after(placeholder.clone());
+		}
 		processCurrentRow(row);
 	}
 }
@@ -96,6 +98,8 @@ function processResultTable() {
 async function processCurrentRow(row) {
 	let instructorDiv = $(row).children(".instructor").first();
 	if (instructorDiv.text().includes("Staff")) {
+		$(row).children(".rmp").empty();
+
 		$(row).children(".rmp").first().text("N/A");
 		return;
 	}
