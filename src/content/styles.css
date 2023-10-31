@@ -4,3 +4,47 @@
 		padding-left: 10px;
 	}
 }
+
+
+.prof-container {
+	position: relative;
+	display: inline-block;
+  }
+  
+  .prof-info {
+	margin-left: 15px;
+	padding: 10px;
+	position: absolute;
+	top: 0; 
+	left: 100%; 
+	opacity: 0;
+	background-color: white;
+	transition: opacity .4s ease;
+	pointer-events: none; 
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+	border-radius: 5px;
+	font-family: 'Arial', sans-serif;
+	width: 180px;
+	height: auto;
+	
+  }
+  
+  .prof-container:hover .prof-info {
+	background-color: white;
+	transition: opacity .4s ease;
+	opacity: 1;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+	z-index: 1;
+  }
+
+  .prof-container:hover .prof-anchor {
+	background-color: rgba(246, 243, 243, 0.995);
+  }
+
+  .prof-namebox{
+	margin-bottom: 3px;
+	padding: 2px;
+	padding-left: 4px;
+	box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+	border-radius: 5px;
+  }
