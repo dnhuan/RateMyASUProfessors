@@ -116,15 +116,13 @@ async function processCurrentRow(row) {
 
 		//check if comma is neccessary
 		const currentIndex = profReviewList.indexOf(profReview);
-		hasNext = profReviewList[currentIndex + 1] !== undefined && profReviewList[currentIndex + 1] !== null;
-		
+		hasNext =
+			profReviewList[currentIndex + 1] !== undefined &&
+			profReviewList[currentIndex + 1] !== null;
+
 		// Insert score into DOM
-		//let HydratedProfScoreComp = ProfScoreComp(profReview);
 		let HydratedProfScoreComp = ProfReviewComp(profReview, hasNext);
 		$(row).children(".rmp").first().append(HydratedProfScoreComp);
-
-		// Decorate profName
-		//decorateInstructorDiv(instructorDiv, profReview);
 	}
 }
 
@@ -156,68 +154,10 @@ async function getReview(profName) {
 	return profReview;
 }
 
-function decorateInstructorDiv(instructorDiv, profData) {
-	if (profData.numRatings == 0) {
-		return;
-	}
-
-	let colorCode = "";
-	if (profData.avgRating < 2.5) {
-		colorCode = "#FF9C9C";
-	} else if (profData.avgRating < 3.5) {
-		colorCode = "#FFFF68";
-	} else {
-		colorCode = "#68FFBE";
-	}
-
-	if (instructorDiv.children("span").length == 0) {
-		// only one prof
-		if (instructorDiv.text() === profData.name) {
-			instructorDiv
-				.children("a")
-				.first()
-				.css("background-color", colorCode);
-		}
-	}
-
-	let nameSpanList = instructorDiv.children("span").first().children("a");
-	for (nameSpan of nameSpanList) {
-		let name = $(nameSpan).text();
-		if (name === profData.name) {
-			$(nameSpan).css("background-color", colorCode);
-		}
-	}
-}
-
-function ProfScoreComp(profData) {
-	if (profData.numRatings == 0) {
-		return `<a style="color:#0F0F0F;text-decoration:none;" target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${profData.legacyId}">N/A</a>`;
-	}
-
-	let colorCode = "";
-	if (profData.avgRating < 2.5) {
-		colorCode = "#FF9C9C";
-	} else if (profData.avgRating < 3.5) {
-		colorCode = "#FFFF68";
-	} else {
-		colorCode = "#68FFBE";
-	}
-	const divFormat = `
-<div style="width:2.4rem;padding:2px;background-color:${colorCode}">
-	<a style="color:#0F0F0F;width:100%;text-decoration:none;" target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${profData.legacyId}">
-	   		<span style="font-size:1rem">${profData.avgRating}</span>
-			<span style="float:right"><sup>/5</sup></span>
-	</a>
- </div>`;
-
-	return divFormat;
-}
-
 function ProfReviewComp(profData, hasNext) {
 	if (profData.numRatings == 0) {
 		return `<a target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${profData.legacyId}">N/A</a>`;
 	}
-	let colorFont = "#0F0F0F";
 	let colorCode = "";
 	if (profData.avgRating < 2.5) {
 		colorCode = "#FF9C9C";
@@ -227,21 +167,29 @@ function ProfReviewComp(profData, hasNext) {
 		colorCode = "#03C03C";
 	}
 
-	if(hasNext){
-		addComma = ", "
-	}else{
-		addComma = " "
+	if (hasNext) {
+		addComma = ", ";
+	} else {
+		addComma = " ";
 	}
 
 	const divFormat = `
 	<div class="prof-container">
-	<a style="text-decoration: none;" target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${profData.legacyId}">
+	<a style="text-decoration: none;" target="_blank" href="https://www.ratemyprofessors.com/ShowRatings.jsp?tid=${
+		profData.legacyId
+	}">
 	<div>
-          <span class="prof-anchor" style="color:${colorCode}; font-size:1.5em; font-weight: bold;">${profData.avgRating}</span><span style="color:black;">${addComma}</span>
+          <span class="prof-anchor" style="color:${colorCode}; font-size:1.5em; font-weight: bold;">${
+		profData.avgRating
+	}</span><span style="color:black;">${addComma}</span>
     </div>
 	</a>
 	<div class="prof-info" >
-	<div class="prof-namebox">${profData.name} <span style="color:${colorCode}; font-weight: bold;">${profData.avgRating}</span>/5</div>
+	<div class="prof-namebox">${
+		profData.name
+	} <span style="color:${colorCode}; font-weight: bold;">${
+		profData.avgRating
+	}</span>/5</div>
 	<div>${profData.avgDifficulty} difficulty</div>
 	<div>${profData.wouldTakeAgainPercent.toFixed(0)}% would take again</div>
 	<div>${profData.numRatings} rating(s)</div>
