@@ -1,6 +1,6 @@
 {
 	"name": "Rate My ASU Professors",
-	"version": "2.1.0",
+	"version": "2.2.0",
 	"description": "Rate My Professors Plugin for ASU Class Search. Allowing you to directly view professor ratings on the ASU Class Search page.",
 	"author": "huan@huandoan.tech",
 	"background": {
@@ -8,11 +8,17 @@
 	},
 	"content_scripts": [
 		{
-			"matches": ["https://catalog.apps.asu.edu/*"],
-			"css": ["content/styles.css"]
+			"matches": [
+				"https://catalog.apps.asu.edu/*"
+			],
+			"css": [
+				"content/styles.css"
+			]
 		},
 		{
-			"matches": ["https://*.asu.edu/catalog/classes*"],
+			"matches": [
+				"https://*.asu.edu/catalog/classes*"
+			],
 			"js": [
 				"content/jquery-3.5.1.min.js",
 				"content/string-similarity.min.js",
@@ -20,7 +26,10 @@
 			]
 		}
 	],
-	"permissions": ["activeTab", "background"],
+	"permissions": [
+		"activeTab",
+		"background"
+	],
 	"host_permissions": [
 		"https://*.asu.edu/*",
 		"https://www.ratemyprofessors.com/*"
